@@ -1,3 +1,5 @@
+[![Kalah-Game Actions Status](https://github.com/morlimoore/kalah-game/workflows/Kalah-Game/badge.svg)](https://github.com/morlimoore/kalah-game/actions)
+
 # kalah-game
 Spring boot project for a game of kalah
 
