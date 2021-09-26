@@ -2,9 +2,9 @@ name: Kalah-Game
 
 on:
   push:
-    branches: [ develop, master ]
+    branches: [ develop, main ]
   pull_request:
-    branches: [ develop, master ]
+    branches: [ develop, main ]
 
 jobs:
   build-test:
