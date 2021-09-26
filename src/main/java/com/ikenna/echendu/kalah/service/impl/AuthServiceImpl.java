@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
     JwtUtils jwtUtils;
 
     @Override
-    public ResponseEntity<ApiResponse<CreateResponse.Success>> createUserAccount(SignUpRequest signUpRequest) {
+    public ResponseEntity<ApiResponse<CreateResponse.Response>> createUserAccount(SignUpRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername()))
             throw new ApiException(BAD_REQUEST, "Username is already taken!");
         if (userRepository.existsByEmail(signUpRequest.getEmail()))

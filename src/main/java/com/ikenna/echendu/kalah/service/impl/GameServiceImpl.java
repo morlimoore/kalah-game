@@ -45,19 +45,23 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public ResponseEntity<ApiResponse<CreateResponse.Success>> joinGame(String gameCode) {
+    public ResponseEntity<ApiResponse<CreateResponse.Response>> joinGame(String gameCode) {
         validateGameExist(gameCode);
 
         String loggedInUsername = getLoggedInUsername();
 
-        validateUserNotHaveActiveGame(loggedInUsername);
+        validateUserNotHaveActiveGame(getLoggedInUsername());
 
-        Game game = gameRepository.findByGameCode(gameCode).get();
-        game.setOpponentUsername(loggedInUsername);
-        gameRepository.save(game);
+        Optional<Game> optionalGame = gameRepository.findByGameCode(gameCode);
+        if (optionalGame.isPresent()) {
+            Game game = optionalGame.get();
+            game.setOpponentUsername(loggedInUsername);
+            gameRepository.save(game);
             return successResponse(OK,
                     String.format("You have successfully paired with %s on game with code: %s. Have fun!",
                             game.getCreatorUsername(), gameCode));
+        } else
+            throw new ApiException(INTERNAL_SERVER_ERROR, "Sorry, an error occurred with your request, try again.");
     }
 
     @Override
@@ -71,9 +75,13 @@ public class GameServiceImpl implements GameService {
         if (gamesAsACreator.isEmpty() && gamesAsAnOpponent.isEmpty())
             throw new ApiException(FORBIDDEN, "Sorry, you are not a participant in this game.");
 
-        Game game = gameRepository.findByGameCode(gameCode).get();
-        GameStatusResponse response = modelMapper.map(game, GameStatusResponse.class);
-        return successResponse(OK, response);
+        Optional<Game> optionalGame = gameRepository.findByGameCode(gameCode);
+        if (optionalGame.isPresent()) {
+            Game game = optionalGame.get();
+            GameStatusResponse response = modelMapper.map(game, GameStatusResponse.class);
+            return successResponse(OK, response);
+        } else
+            throw new ApiException(INTERNAL_SERVER_ERROR, "Sorry, an error occurred with your request, try again.");
     }
 
 

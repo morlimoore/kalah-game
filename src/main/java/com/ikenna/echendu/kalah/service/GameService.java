@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 public interface GameService {
     ResponseEntity<ApiResponse<GameCreationResponse>> createGame();
 
-    ResponseEntity<ApiResponse<CreateResponse.Success>> joinGame(String gameCode);
+    ResponseEntity<ApiResponse<CreateResponse.Response>> joinGame(String gameCode);
 
     ResponseEntity<ApiResponse<GameStatusResponse>> getGameStatus(String gameCode);
 }

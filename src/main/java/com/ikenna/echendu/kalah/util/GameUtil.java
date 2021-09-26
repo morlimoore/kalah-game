@@ -1,9 +1,12 @@
 package com.ikenna.echendu.kalah.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.security.SecureRandom;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GameUtil {
 
     public static String getNumberSequence() {

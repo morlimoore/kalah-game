@@ -14,11 +14,11 @@ public class CreateResponse {
         return new ResponseEntity<>(response, response.getStatus());
     }
 
-    public static ResponseEntity<ApiResponse<Error>> errorResponse(HttpStatus status, String result) {
-        ApiResponse<Error> response = new ApiResponse<>();
+    public static ResponseEntity<ApiResponse<Response>> errorResponse(HttpStatus status, String result) {
+        ApiResponse<Response> response = new ApiResponse<>();
         response.setStatus(status);
         response.setMessage("ERROR");
-        response.setResult(new Error(result));
+        response.setResult(new Response(result));
         return createResponse(response);
     }
 
@@ -30,11 +30,11 @@ public class CreateResponse {
         return createResponse(response);
     }
 
-    public static ResponseEntity<ApiResponse<Success>> successResponse(HttpStatus status, String result) {
-        ApiResponse<Success> response = new ApiResponse<>();
+    public static ResponseEntity<ApiResponse<Response>> successResponse(HttpStatus status, String result) {
+        ApiResponse<Response> response = new ApiResponse<>();
         response.setStatus(status);
         response.setMessage("SUCCESS");
-        response.setResult(new Success(result));
+        response.setResult(new Response(result));
         return createResponse(response);
     }
 
@@ -48,13 +48,7 @@ public class CreateResponse {
 
     @Data
     @AllArgsConstructor
-    public static class Error {
-        private String error;
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class Success {
-        private String success;
+    public static class Response {
+        private String message;
     }
 }

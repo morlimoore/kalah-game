@@ -14,7 +14,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({ ApiException.class })
-    public ResponseEntity<ApiResponse<CreateResponse.Error>> handleCustomException(Exception ex) {
+    public ResponseEntity<ApiResponse<CreateResponse.Response>> handleCustomException(Exception ex) {
         return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());
     }
 }

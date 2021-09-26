@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
 
-    ResponseEntity<ApiResponse<CreateResponse.Success>> createUserAccount(SignUpRequest signUpRequest);
+    ResponseEntity<ApiResponse<CreateResponse.Response>> createUserAccount(SignUpRequest signUpRequest);
 
     ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(LoginRequest loginRequest);
 }

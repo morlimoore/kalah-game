@@ -25,7 +25,7 @@ public class GameController {
     }
 
     @PutMapping("/join/{gameCode}")
-    public ResponseEntity<ApiResponse<CreateResponse.Success>> joinGame(@PathVariable String gameCode) {
+    public ResponseEntity<ApiResponse<CreateResponse.Response>> joinGame(@PathVariable String gameCode) {
         validateGameCodeFormat(gameCode);
         return gameService.joinGame(gameCode);
     }
