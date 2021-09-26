@@ -1,11 +1,13 @@
 package com.ikenna.echendu.kalah.controller;
 
-import com.ikenna.echendu.kalah.dto.LoginRequestDto;
-import com.ikenna.echendu.kalah.dto.SignUpRequestDto;
+import com.ikenna.echendu.kalah.dto.request.LoginRequest;
+import com.ikenna.echendu.kalah.dto.request.SignUpRequest;
+import com.ikenna.echendu.kalah.exception.ApiException;
 import com.ikenna.echendu.kalah.payload.ApiResponse;
+import com.ikenna.echendu.kalah.payload.CreateResponse;
+import com.ikenna.echendu.kalah.payload.JwtResponse;
 import com.ikenna.echendu.kalah.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-import static com.ikenna.echendu.kalah.payload.CreateResponse.errorResponse;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestController
@@ -26,23 +27,19 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<String>> registerUser(@Valid @RequestBody SignUpRequestDto signUpRequestDTO, BindingResult result) {
+    public ResponseEntity<ApiResponse<CreateResponse.Success>> registerUser(@Valid @RequestBody SignUpRequest signUpRequest,
+                                                                            BindingResult result) {
         if (result.hasErrors())
-            return errorResponse(result.getFieldError().getDefaultMessage(), BAD_REQUEST);
+            throw new ApiException(BAD_REQUEST, result.getFieldError().getDefaultMessage());
 
-        else if (authService.ifUsernameExists(signUpRequestDTO.getUsername()))
-            return errorResponse("Username is already taken!", BAD_REQUEST);
-        else if (authService.ifEmailExists(signUpRequestDTO.getEmail()))
-            return errorResponse("Email address is already taken!", BAD_REQUEST);
-
-        return authService.createUserAccount(signUpRequestDTO);
+        return authService.createUserAccount(signUpRequest);
     }
 
     @PostMapping("/login")
-    public HttpEntity<?> loginUser(@Valid @RequestBody LoginRequestDto loginRequestDTO,
-                                       BindingResult result) {
+    public ResponseEntity<ApiResponse<JwtResponse>> loginUser(@Valid @RequestBody LoginRequest loginRequest,
+                                                              BindingResult result) {
         if (result.hasErrors())
-            return errorResponse(result.getFieldError().getDefaultMessage(), BAD_REQUEST);
-        return authService.authenticateUser(loginRequestDTO);
+            throw new ApiException(BAD_REQUEST, result.getFieldError().getDefaultMessage());
+        return authService.authenticateUser(loginRequest);
     }
 }

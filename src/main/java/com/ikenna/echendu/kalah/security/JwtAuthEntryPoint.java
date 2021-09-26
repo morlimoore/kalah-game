@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.ikenna.echendu.kalah.util.AppUtil.getErrorMessage;
+import static com.ikenna.echendu.kalah.util.ErrorMessageUtil.getErrorMessage;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Component

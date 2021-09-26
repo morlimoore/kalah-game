@@ -1,6 +1,7 @@
 package com.ikenna.echendu.kalah.exception;
 
 import com.ikenna.echendu.kalah.payload.ApiResponse;
+import com.ikenna.echendu.kalah.payload.CreateResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,7 +14,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({ ApiException.class })
-    public ResponseEntity<ApiResponse<String>> handleCustomException(Exception ex) {
-        return errorResponse(ex.getLocalizedMessage(), BAD_REQUEST);
+    public ResponseEntity<ApiResponse<CreateResponse.Error>> handleCustomException(Exception ex) {
+        return errorResponse(BAD_REQUEST, ex.getLocalizedMessage());
     }
 }

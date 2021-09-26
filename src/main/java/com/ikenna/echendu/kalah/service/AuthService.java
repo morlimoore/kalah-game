@@ -1,18 +1,15 @@
 package com.ikenna.echendu.kalah.service;
 
-import com.ikenna.echendu.kalah.dto.LoginRequestDto;
-import com.ikenna.echendu.kalah.dto.SignUpRequestDto;
+import com.ikenna.echendu.kalah.dto.request.LoginRequest;
+import com.ikenna.echendu.kalah.dto.request.SignUpRequest;
 import com.ikenna.echendu.kalah.payload.ApiResponse;
+import com.ikenna.echendu.kalah.payload.CreateResponse;
 import com.ikenna.echendu.kalah.payload.JwtResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
 
-    Boolean ifUsernameExists(String username);
+    ResponseEntity<ApiResponse<CreateResponse.Success>> createUserAccount(SignUpRequest signUpRequest);
 
-    Boolean ifEmailExists(String email);
-
-    ResponseEntity<ApiResponse<String>> createUserAccount(SignUpRequestDto signUpRequestDTO);
-
-    ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(LoginRequestDto loginRequestDTO);
+    ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(LoginRequest loginRequest);
 }

@@ -1,13 +1,13 @@
 package com.ikenna.echendu.kalah.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 
-public class AppUtil {
-
-    private AppUtil(){}
-
-    public static String errorMessage = "";
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class DateTimeUtil {
 
     public static DateTimeFormatter getDateTimeFormat() {
         return DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss a");
@@ -19,13 +19,5 @@ public class AppUtil {
 
     public static SimpleDateFormat getJavaTimeFormat() {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    }
-
-    public static void setErrorMessage(String error) {
-        errorMessage = error;
-    }
-
-    public static String getErrorMessage() {
-        return errorMessage;
     }
 }

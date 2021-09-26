@@ -1,10 +1,12 @@
 package com.ikenna.echendu.kalah.service.impl;
 
-import com.ikenna.echendu.kalah.dto.LoginRequestDto;
-import com.ikenna.echendu.kalah.dto.SignUpRequestDto;
+import com.ikenna.echendu.kalah.dto.request.LoginRequest;
+import com.ikenna.echendu.kalah.dto.request.SignUpRequest;
 import com.ikenna.echendu.kalah.entity.User;
+import com.ikenna.echendu.kalah.exception.ApiException;
 import com.ikenna.echendu.kalah.model.Enum;
 import com.ikenna.echendu.kalah.payload.ApiResponse;
+import com.ikenna.echendu.kalah.payload.CreateResponse;
 import com.ikenna.echendu.kalah.payload.JwtResponse;
 import com.ikenna.echendu.kalah.repository.UserRepository;
 import com.ikenna.echendu.kalah.security.JwtUtils;
@@ -24,9 +26,8 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import static com.ikenna.echendu.kalah.payload.CreateResponse.successResponse;
-import static com.ikenna.echendu.kalah.util.AppUtil.getDateTimeFormat;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
+import static com.ikenna.echendu.kalah.util.DateTimeUtil.getDateTimeFormat;
+import static org.springframework.http.HttpStatus.*;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -47,28 +48,23 @@ public class AuthServiceImpl implements AuthService {
     JwtUtils jwtUtils;
 
     @Override
-    public Boolean ifUsernameExists(String username) {
-        return userRepository.existsByUsername(username);
-    }
+    public ResponseEntity<ApiResponse<CreateResponse.Success>> createUserAccount(SignUpRequest signUpRequest) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername()))
+            throw new ApiException(BAD_REQUEST, "Username is already taken!");
+        if (userRepository.existsByEmail(signUpRequest.getEmail()))
+            throw new ApiException(BAD_REQUEST, "Email address is already taken!");
 
-    @Override
-    public Boolean ifEmailExists(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    @Override
-    public ResponseEntity<ApiResponse<String>> createUserAccount(SignUpRequestDto signUpRequestDTO) {
-        User user = modelMapper.map(signUpRequestDTO, User.class);
-        user.setPassword(passwordEncoder.encode(signUpRequestDTO.getPassword()));
+        User user = modelMapper.map(signUpRequest, User.class);
+        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
         user.setRole(Enum.Role.PLAYER);
         userRepository.save(user);
-        return successResponse("User Registration Successful", CREATED);
+        return successResponse(CREATED, "User Registration Successful");
     }
 
     @Override
-    public ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(LoginRequestDto loginRequestDTO) {
+    public ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
@@ -87,6 +83,6 @@ public class AuthServiceImpl implements AuthService {
                 .issuedAt(presentDateTime.format(getDateTimeFormat()))
                 .expiry(presentDateTime.plusSeconds(jwtUtils.getTokenValidityInSecs()).format(getDateTimeFormat()))
                 .build();
-        return successResponse(result, OK);
+        return successResponse(OK, result);
     }
 }

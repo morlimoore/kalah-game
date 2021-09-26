@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
-import static com.ikenna.echendu.kalah.util.AppUtil.getDateTimeFormat;
+import static com.ikenna.echendu.kalah.util.DateTimeUtil.getDateTimeFormat;
 
 @Getter
 @Setter

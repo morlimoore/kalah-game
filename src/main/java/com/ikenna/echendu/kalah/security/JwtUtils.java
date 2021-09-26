@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
-import static com.ikenna.echendu.kalah.util.AppUtil.*;
+import static com.ikenna.echendu.kalah.util.DateTimeUtil.*;
+import static com.ikenna.echendu.kalah.util.ErrorMessageUtil.setErrorMessage;
 
 @Component
 @Slf4j
