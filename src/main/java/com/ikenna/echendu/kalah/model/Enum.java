@@ -9,4 +9,8 @@ public class Enum {
     public enum TokenType {
         BEARER;
     }
+
+    public enum GameStatus {
+        CREATED, READY, ONGOING, CONCLUDED
+    }
 }

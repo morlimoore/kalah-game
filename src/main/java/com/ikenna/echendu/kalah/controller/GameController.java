@@ -2,7 +2,6 @@ package com.ikenna.echendu.kalah.controller;
 
 import com.ikenna.echendu.kalah.dto.response.GameCreationResponse;
 import com.ikenna.echendu.kalah.dto.response.GameStatusResponse;
-import com.ikenna.echendu.kalah.exception.ApiException;
 import com.ikenna.echendu.kalah.payload.ApiResponse;
 import com.ikenna.echendu.kalah.payload.CreateResponse;
 import com.ikenna.echendu.kalah.service.GameService;
@@ -10,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static com.ikenna.echendu.kalah.util.ValidationUtil.validateGameCodeFormat;
+import static com.ikenna.echendu.kalah.util.ValidationUtil.validatePitId;
 
 @RestController
 @RequestMapping("/kalah")
@@ -36,10 +36,11 @@ public class GameController {
         return gameService.getGameStatus(gameCode);
     }
 
-
-
-    private void validateGameCodeFormat(String gameCode) {
-        if (!gameCode.matches("\\d{3}-\\d{3}-\\d{3}"))
-            throw new ApiException(BAD_REQUEST, "Invalid game code. It must be in the format: 000-000-000");
+    @PutMapping("/{gameCode}/pits/{pitId}")
+    public ResponseEntity<ApiResponse<GameStatusResponse>> playGame(@PathVariable String gameCode, @PathVariable String pitId) {
+        validateGameCodeFormat(gameCode);
+        validatePitId(pitId);
+        return gameService.playGame(gameCode, pitId);
     }
+
 }

@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.ikenna.echendu.kalah.util.ErrorMessageUtil.getErrorMessage;
+import static com.ikenna.echendu.kalah.util.ErrorMessageUtil.getAuthErrorMessage;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Component
@@ -21,13 +21,13 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        log.error("Authorization error: {}", getErrorMessage());
+        log.error("Authorization error: {}", getAuthErrorMessage());
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         ApiResponse<String> filterResponse = new ApiResponse<>();
         filterResponse.setStatus(UNAUTHORIZED);
         filterResponse.setMessage("ERROR");
-        filterResponse.setResult(getErrorMessage());
+        filterResponse.setResult(getAuthErrorMessage());
         response.getOutputStream().println(filterResponse.toString());
     }
 }

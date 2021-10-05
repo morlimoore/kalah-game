@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 import static com.ikenna.echendu.kalah.util.DateTimeUtil.*;
-import static com.ikenna.echendu.kalah.util.ErrorMessageUtil.setErrorMessage;
+import static com.ikenna.echendu.kalah.util.ErrorMessageUtil.setAuthErrorMessage;
 
 @Component
 @Slf4j
@@ -55,7 +55,7 @@ public class JwtUtils {
         } catch (ExpiredJwtException e) {
             String tokenExpiry = StringUtils.substringBetween(e.getMessage(),"JWT expired at",". Current time");
             String tokenExpiryFormatted = getSimpleDateTimeFormat().format(getJavaTimeFormat().parse(tokenExpiry.trim()));
-            setErrorMessage(String.format("Sorry, your token expired on %s. Please, login again to get a valid token.",
+            setAuthErrorMessage(String.format("Sorry, your token expired on %s. Please, login again to get a valid token.",
                     tokenExpiryFormatted));
         } catch (UnsupportedJwtException e) {
             log.error("JWT token is unsupported: {}", e.getMessage());

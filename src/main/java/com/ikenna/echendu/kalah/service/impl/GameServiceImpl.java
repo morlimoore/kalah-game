@@ -3,7 +3,9 @@ package com.ikenna.echendu.kalah.service.impl;
 import com.ikenna.echendu.kalah.dto.response.GameCreationResponse;
 import com.ikenna.echendu.kalah.dto.response.GameStatusResponse;
 import com.ikenna.echendu.kalah.entity.Game;
-import com.ikenna.echendu.kalah.exception.ApiException;
+import com.ikenna.echendu.kalah.logic.GamePlay;
+import com.ikenna.echendu.kalah.model.Enum;
+import com.ikenna.echendu.kalah.model.GameRecord;
 import com.ikenna.echendu.kalah.payload.ApiResponse;
 import com.ikenna.echendu.kalah.payload.CreateResponse;
 import com.ikenna.echendu.kalah.repository.GameRepository;
@@ -13,12 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-
 import static com.ikenna.echendu.kalah.payload.CreateResponse.successResponse;
 import static com.ikenna.echendu.kalah.util.AuthUtil.getLoggedInUsername;
 import static com.ikenna.echendu.kalah.util.GameUtil.getNumberSequence;
+import static com.ikenna.echendu.kalah.util.ValidationUtil.*;
 import static org.springframework.http.HttpStatus.*;
 
 @Service
@@ -30,6 +30,9 @@ public class GameServiceImpl implements GameService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private GamePlay gamePlay;
+
     @Override
     public ResponseEntity<ApiResponse<GameCreationResponse>> createGame() {
         String loggedInUsername = getLoggedInUsername();
@@ -40,87 +43,67 @@ public class GameServiceImpl implements GameService {
 
         Game game = buildNewGame(loggedInUsername);
         gameRepository.save(game);
-        response.setGameCode(game.getGameCode());
+        response.setGameCode(game.getCode());
         return successResponse(CREATED, response);
     }
 
     @Override
     public ResponseEntity<ApiResponse<CreateResponse.Response>> joinGame(String gameCode) {
-        validateGameExist(gameCode);
+        //Prevent user from joining his own game
+        Game game = fetchAndValidateGameExist(gameCode);
 
         String loggedInUsername = getLoggedInUsername();
 
+        validateUserNotJoinOwnGame(game, loggedInUsername);
         validateUserNotHaveActiveGame(getLoggedInUsername());
 
-        Optional<Game> optionalGame = gameRepository.findByGameCode(gameCode);
-        if (optionalGame.isPresent()) {
-            Game game = optionalGame.get();
-            game.setOpponentUsername(loggedInUsername);
-            gameRepository.save(game);
-            return successResponse(OK,
-                    String.format("You have successfully paired with %s on game with code: %s. Have fun!",
-                            game.getCreatorUsername(), gameCode));
-        } else
-            throw new ApiException(INTERNAL_SERVER_ERROR, "Sorry, an error occurred with your request, try again.");
+        game.setOpponentUsername(loggedInUsername);
+        game.setStatus(Enum.GameStatus.READY);
+        gameRepository.save(game);
+        return successResponse(OK,
+                String.format("You have successfully paired with %s on game with code: %s. Have fun!",
+                        game.getCreatorUsername(), gameCode));
     }
 
     @Override
     public ResponseEntity<ApiResponse<GameStatusResponse>> getGameStatus(String gameCode) {
-        validateGameExist(gameCode);
+        Game game = fetchAndValidateGameExist(gameCode);
 
         String loggedInUsername = getLoggedInUsername();
-        List<Game> gamesAsACreator = gameRepository.getGamesByCreatorUsernameAndGameCode(loggedInUsername, gameCode);
-        List<Game> gamesAsAnOpponent = gameRepository.getGamesByOpponentUsernameAndGameCode(loggedInUsername, gameCode);
+        validateUserIsAParticipantInListOfGames(loggedInUsername, gameCode);
 
-        if (gamesAsACreator.isEmpty() && gamesAsAnOpponent.isEmpty())
-            throw new ApiException(FORBIDDEN, "Sorry, you are not a participant in this game.");
+//        GameStatusResponse response = modelMapper.map(game, GameStatusResponse.class);
+        GameStatusResponse response = GameStatusResponse.of(gamePlay.getGameRecord(game));
+        return successResponse(OK, response);
+    }
 
-        Optional<Game> optionalGame = gameRepository.findByGameCode(gameCode);
-        if (optionalGame.isPresent()) {
-            Game game = optionalGame.get();
-            GameStatusResponse response = modelMapper.map(game, GameStatusResponse.class);
-            return successResponse(OK, response);
-        } else
-            throw new ApiException(INTERNAL_SERVER_ERROR, "Sorry, an error occurred with your request, try again.");
+    @Override
+    public ResponseEntity<ApiResponse<GameStatusResponse>> playGame(String gameCode, String potId) {
+        Game game = fetchAndValidateGameExist(gameCode);
+        validateGameHasOpponentAndIsNotConcluded(game);
+        String loggedInUsername = getLoggedInUsername();
+        validateUserIsAParticipantInSingleGame(game, loggedInUsername);
+        validateUserIsPlayingOwnPot(game, loggedInUsername, potId);
+
+        return successResponse(OK, gamePlay.makeMove(game, potId));
     }
 
 
     private Game buildNewGame(String username) {
         String code = getNumberSequence();
-        while (gameRepository.existsByGameCode(code)) {
+        while (gameRepository.existsByCode(code)) {
             code = getNumberSequence();
         }
         return Game.builder()
-                .gameCode(code)
+                .code(code)
                 .creatorUsername(username)
+                .status(Enum.GameStatus.CREATED)
                 .build();
     }
 
-    private void validateGameExist(String gameCode) {
-        if (!gameRepository.existsByGameCode(gameCode))
-            throw new ApiException(BAD_REQUEST, String.format("Sorry, game with code: %s does not exist.", gameCode));
-    }
 
-    private void validateUserNotHaveActiveGame(String loggedInUsername) {
-        List<Game> onGoingCreatedGames = gameRepository.getOngoingGamesByCreatorUsername(loggedInUsername);
-        if (!onGoingCreatedGames.isEmpty()) {
-            String errorMessage = "";
-            Optional<String> optional = Optional.ofNullable(onGoingCreatedGames.get(0).getOpponentUsername());
-            if (optional.isPresent())
-                errorMessage = String.format("Sorry, you and %s still have a game with code: '%s' running. " +
-                                "Please, conclude it before starting or joining another.", optional.get(),
-                        onGoingCreatedGames.get(0).getGameCode());
-            else
-                errorMessage = String.format("Sorry, conclude your game with code: '%s', " +
-                        "before attempting to start or join another.", onGoingCreatedGames.get(0).getGameCode());
-            throw new ApiException(FORBIDDEN, errorMessage);
-        }
 
-        List<Game> onGoingGamesAsOpponent = gameRepository.getOngoingGamesByOpponentUsername(loggedInUsername);
-        if (!onGoingGamesAsOpponent.isEmpty())
-            throw new ApiException(FORBIDDEN,
-                    String.format("Sorry, you are already an opponent with %s on game with code: '%s'.",
-                            onGoingGamesAsOpponent.get(0).getCreatorUsername(),
-                            onGoingGamesAsOpponent.get(0).getGameCode()));
-    }
+
+
+
 }

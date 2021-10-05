@@ -1,13 +1,12 @@
 package com.ikenna.echendu.kalah.entity;
 
+import com.ikenna.echendu.kalah.model.Enum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "games")
@@ -18,7 +17,7 @@ import javax.persistence.Table;
 public class Game extends BaseEntity {
 
     @Column(unique = true, nullable = false, length = 40)
-    private String gameCode;
+    private String code;
 
     @Column(nullable = false, length = 40)
     private String creatorUsername;
@@ -26,8 +25,9 @@ public class Game extends BaseEntity {
     @Column(length = 40)
     private String opponentUsername;
 
-    @Column(nullable = false, length = 5)
-    private boolean isOver;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Enum.GameStatus status;
 
     @Column(length = 40)
     private String winner;

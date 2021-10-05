@@ -26,4 +26,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     private Enum.Role role;
+
+    @Column(nullable = false)
+    private long totalGamesPlayed;
+
+    @Column(nullable = false)
+    private long numberOfWins;
 }

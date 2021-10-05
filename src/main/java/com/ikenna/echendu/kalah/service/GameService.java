@@ -12,4 +12,6 @@ public interface GameService {
     ResponseEntity<ApiResponse<CreateResponse.Response>> joinGame(String gameCode);
 
     ResponseEntity<ApiResponse<GameStatusResponse>> getGameStatus(String gameCode);
+
+    ResponseEntity<ApiResponse<GameStatusResponse>> playGame(String gameCode, String pitId);
 }

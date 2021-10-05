@@ -11,21 +11,21 @@ import java.util.Optional;
 @Repository
 public interface GameRepository extends JpaRepository<Game, Long> {
 
-    Optional<Game> findByGameCode(String gameCode);
+    Optional<Game> findByCode(String gameCode);
 
-    Boolean existsByGameCode(String gameCode);
+    Boolean existsByCode(String gameCode);
 
-    @Query(value = "SELECT * FROM games WHERE creator_username = ? AND is_over = FALSE", nativeQuery = true)
+    @Query(value = "SELECT * FROM games WHERE creator_username = ? AND status != 'CONCLUDED'", nativeQuery = true)
     List<Game> getOngoingGamesByCreatorUsername(String username);
 
-    @Query(value = "SELECT * FROM games WHERE opponent_username = ? AND is_over = FALSE", nativeQuery = true)
+    @Query(value = "SELECT * FROM games WHERE opponent_username = ? AND status != 'CONCLUDED'", nativeQuery = true)
     List<Game> getOngoingGamesByOpponentUsername(String username);
 
     Optional<Game> findById(Long id);
 
-    @Query(value = "SELECT * FROM games WHERE creator_username = ? AND game_code = ?", nativeQuery = true)
-    List<Game> getGamesByCreatorUsernameAndGameCode(String username, String gameCode);
+    @Query(value = "SELECT * FROM games WHERE creator_username = ? AND code = ?", nativeQuery = true)
+    List<Game> getGamesByCreatorUsernameAndCode(String username, String gameCode);
 
-    @Query(value = "SELECT * FROM games WHERE opponent_username = ? AND game_code = ?", nativeQuery = true)
-    List<Game> getGamesByOpponentUsernameAndGameCode(String username, String gameCode);
+    @Query(value = "SELECT * FROM games WHERE opponent_username = ? AND code = ?", nativeQuery = true)
+    List<Game> getGamesByOpponentUsernameAndCode(String username, String gameCode);
 }
