@@ -41,7 +41,7 @@ There are no global, defined rules to playing the game, hence, it is important t
 7. The player with the highest stones in his/her mankalah, wins the game.
 
 
-##Running the Application
+## Running the Application
 The application was written using Maven as the build tool and Java 11. It was also built with an in-memory database, so,
 you shouldn't have to worry about database configurations.
 
@@ -49,7 +49,7 @@ Once you clone the repo, you can build and run it.
 
 
 
-##Future improvements
+## Future improvements
 1. The first improvement I would work on would be to add more tests, both unit and integration tests.
 I couldn't add much because I had a little time to work on the task each day.
    
