@@ -12,7 +12,7 @@
 	<artifactId>kalah-game</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>kalah-game</name>
-	<description>Demo project for Spring Boot</description>
+	<description>An application for the Kalah Game</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>

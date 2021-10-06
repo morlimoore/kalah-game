@@ -3,7 +3,6 @@ package com.ikenna.echendu.kalah.logic.impl;
 import com.ikenna.echendu.kalah.dto.response.GameStatusResponse;
 import com.ikenna.echendu.kalah.entity.Game;
 import com.ikenna.echendu.kalah.entity.User;
-import com.ikenna.echendu.kalah.exception.ApiException;
 import com.ikenna.echendu.kalah.logic.GamePlay;
 import com.ikenna.echendu.kalah.model.Enum;
 import com.ikenna.echendu.kalah.model.GameRecord;
@@ -33,7 +32,34 @@ public class GamePlayImpl implements GamePlay {
     private String lastDroppedPotId = "";
 
     @Override
-    public GameRecord init(Game game) throws ApiException {
+    public GameStatusResponse makeMove(Game game, String potId) {
+        GameRecord gameRecord = init(game);
+        validateUserHasPresentTurn(gameRecord);
+        Map<String, Integer> pots = gameRecord.getPots();
+
+        int stones = pickUpStonesFromPot(pots, potId);
+        distributeStonesToPots(gameRecord, getNextPot(gameRecord, potId), stones);
+        assignNextTurn(gameRecord);
+
+        if (hasNoStonesLeft(gameRecord)) {
+            returnPartnerStonesToMankalah(gameRecord);
+            endGame(gameRecord);
+        }
+        gameRecordMap.put(game.getCode(), gameRecord);
+        return GameStatusResponse.of(gameRecord);
+    }
+
+    @Override
+    public GameRecord getGameRecord(Game game) {
+        Optional<GameRecord> optional = Optional.ofNullable(gameRecordMap.get(game.getCode()));
+        if (optional.isPresent())
+            return optional.get();
+        return GameRecord.of(game);
+    }
+
+
+
+    private GameRecord init(Game game) {
         GameRecord gameRecord;
         Optional<GameRecord> gameRecordOptional = Optional.ofNullable(gameRecordMap.get(game.getCode()));
         if (gameRecordOptional.isPresent())
@@ -42,54 +68,12 @@ public class GamePlayImpl implements GamePlay {
             game.setStatus(Enum.GameStatus.ONGOING);
             gameRepository.save(game);
             gameRecord = GameRecord.of(game);
-//            gameRecord.setGameCode(game.getCode());
-//            gameRecord.setCreatorUsername(game.getCreatorUsername());
-//            gameRecord.setOpponentUsername(game.getOpponentUsername());
             gameRecordMap.put(game.getCode(), gameRecord);
         }
         return gameRecord;
     }
 
-    public GameStatusResponse makeMove(Game game, String potId) {
-        //check for winner at every round
-        //implement game rules
-        //determine when the game has ended
-        GameRecord gameRecord = init(game);
-        validateUserHasPresentTurn(gameRecord);
-        Map<String, Integer> pots = gameRecord.getPots();
-
-        int stones = pickUpStonesFromPot(pots, potId);
-        distributeStonesToPots(gameRecord, getNextPot(gameRecord, potId), stones);
-        gameRecord = assignNextTurn(gameRecord);
-
-        if (hasNoStonesLeft(gameRecord)) {
-            returnPartnerStonesToMankalah(gameRecord);
-            endGame(gameRecord);
-        }
-        gameRecordMap.put(game.getCode(), gameRecord);
-
-        return GameStatusResponse.of(gameRecord);
-    }
-
-    public Map<String, Integer> getPots(String gameCode) {
-        return gameRecordMap.get(gameCode).getPots();
-    }
-
-    public GameRecord getGameRecord(Game game) {
-        Optional<GameRecord> optional = Optional.ofNullable(gameRecordMap.get(game.getCode()));
-        if (optional.isPresent())
-            return optional.get();
-        return GameRecord.of(game);
-    }
-
-    public String getNextTurn(String gameCode) {
-        Optional<GameRecord> optional = Optional.ofNullable(gameRecordMap.get(gameCode));
-        if (optional.isPresent())
-            return optional.get().getNextTurn();
-        return "";
-    }
-
-    public GameRecord assignNextTurn(GameRecord gameRecord) {
+    private GameRecord assignNextTurn(GameRecord gameRecord) {
         String loggedInUsername = getLoggedInUsername();
 
         if (didStoneEndInMankalah(gameRecord, lastDroppedPotId))
@@ -215,31 +199,35 @@ public class GamePlayImpl implements GamePlay {
     }
 
     private void endGame(GameRecord gameRecord) {
-        User creator = userRepository.findByUsername(gameRecord.getCreatorUsername()).get();
-        User opponent = userRepository.findByUsername(gameRecord.getOpponentUsername()).get();
+        Optional<User> optionalCreator = userRepository.findByUsername(gameRecord.getCreatorUsername());
+        Optional<User> optionalOpponent = userRepository.findByUsername(gameRecord.getOpponentUsername());
+        Optional<Game> optionalGame = gameRepository.findByCode(gameRecord.getGameCode());
 
-        Game game = gameRepository.findByCode(gameRecord.getGameCode()).get();
-        game.setStatus(Enum.GameStatus.CONCLUDED);
-        gameRecord.setStatus(Enum.GameStatus.CONCLUDED);
-        gameRecord.setNextTurn("");
+        if (optionalCreator.isPresent() && optionalOpponent.isPresent() && optionalGame.isPresent()) {
+            User creator = optionalCreator.get();
+            User opponent = optionalOpponent.get();
+            Game game = optionalGame.get();
 
-        if (gameRecord.getPots().get("7") > gameRecord.getPots().get("14")) {
-            game.setWinner(gameRecord.getCreatorUsername());
-            creator.setNumberOfWins(creator.getNumberOfWins() + 1);
-            gameRecord.setWinner(gameRecord.getCreatorUsername());
+            game.setStatus(Enum.GameStatus.CONCLUDED);
+            gameRecord.setStatus(Enum.GameStatus.CONCLUDED);
+            gameRecord.setNextTurn("");
+
+            if (gameRecord.getPots().get("7") > gameRecord.getPots().get("14")) {
+                game.setWinner(gameRecord.getCreatorUsername());
+                creator.setNumberOfWins(creator.getNumberOfWins() + 1);
+                gameRecord.setWinner(gameRecord.getCreatorUsername());
+            } else if (gameRecord.getPots().get("14") > gameRecord.getPots().get("7")) {
+                game.setWinner(gameRecord.getOpponentUsername());
+                opponent.setNumberOfWins(opponent.getNumberOfWins() + 1);
+                gameRecord.setWinner(gameRecord.getOpponentUsername());
+            } else
+                game.setWinner("ITS A TIE");
+
+            creator.setTotalGamesPlayed(creator.getTotalGamesPlayed() + 1);
+            userRepository.save(creator);
+            opponent.setTotalGamesPlayed(opponent.getTotalGamesPlayed() + 1);
+            userRepository.save(opponent);
+            gameRepository.save(game);
         }
-        else if (gameRecord.getPots().get("14") > gameRecord.getPots().get("7")) {
-            game.setWinner(gameRecord.getOpponentUsername());
-            opponent.setNumberOfWins(opponent.getNumberOfWins() + 1);
-            gameRecord.setWinner(gameRecord.getOpponentUsername());
-        }
-        else
-            game.setWinner("ITS A TIE");
-
-        creator.setTotalGamesPlayed(creator.getTotalGamesPlayed() + 1);
-        userRepository.save(creator);
-        opponent.setTotalGamesPlayed(opponent.getTotalGamesPlayed() + 1);
-        userRepository.save(opponent);
-        gameRepository.save(game);
     }
 }

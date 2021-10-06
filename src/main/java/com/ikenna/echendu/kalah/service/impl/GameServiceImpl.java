@@ -5,7 +5,6 @@ import com.ikenna.echendu.kalah.dto.response.GameStatusResponse;
 import com.ikenna.echendu.kalah.entity.Game;
 import com.ikenna.echendu.kalah.logic.GamePlay;
 import com.ikenna.echendu.kalah.model.Enum;
-import com.ikenna.echendu.kalah.model.GameRecord;
 import com.ikenna.echendu.kalah.payload.ApiResponse;
 import com.ikenna.echendu.kalah.payload.CreateResponse;
 import com.ikenna.echendu.kalah.repository.GameRepository;
@@ -49,7 +48,6 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public ResponseEntity<ApiResponse<CreateResponse.Response>> joinGame(String gameCode) {
-        //Prevent user from joining his own game
         Game game = fetchAndValidateGameExist(gameCode);
 
         String loggedInUsername = getLoggedInUsername();
@@ -72,7 +70,6 @@ public class GameServiceImpl implements GameService {
         String loggedInUsername = getLoggedInUsername();
         validateUserIsAParticipantInListOfGames(loggedInUsername, gameCode);
 
-//        GameStatusResponse response = modelMapper.map(game, GameStatusResponse.class);
         GameStatusResponse response = GameStatusResponse.of(gamePlay.getGameRecord(game));
         return successResponse(OK, response);
     }
@@ -100,10 +97,4 @@ public class GameServiceImpl implements GameService {
                 .status(Enum.GameStatus.CREATED)
                 .build();
     }
-
-
-
-
-
-
 }

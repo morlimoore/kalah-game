@@ -5,6 +5,8 @@ import com.ikenna.echendu.kalah.exception.ApiException;
 import com.ikenna.echendu.kalah.model.Enum;
 import com.ikenna.echendu.kalah.model.GameRecord;
 import com.ikenna.echendu.kalah.repository.GameRepository;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
 
@@ -16,6 +18,7 @@ import static com.ikenna.echendu.kalah.util.AuthUtil.getLoggedInUsername;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ValidationUtil {
 
     private static GameRepository gameRepository = getBean(GameRepository.class);

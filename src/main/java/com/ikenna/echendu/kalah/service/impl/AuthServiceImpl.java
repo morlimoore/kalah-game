@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
             } catch (BadCredentialsException e) {
             throw new ApiException(BAD_REQUEST, "Invalid username or password. " +
                     "Please check your credentials and try again. " +
-                    "If you don't have an account, sign up using: 'http://<host>:<port>/auth/signup");
+                    "If you don't have an account, sign up using: 'http://<host>:<port>/api/v1/auth/signup");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

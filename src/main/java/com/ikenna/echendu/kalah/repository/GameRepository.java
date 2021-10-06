@@ -13,7 +13,7 @@ public interface GameRepository extends JpaRepository<Game, Long> {
 
     Optional<Game> findByCode(String gameCode);
 
-    Boolean existsByCode(String gameCode);
+    boolean existsByCode(String gameCode);
 
     @Query(value = "SELECT * FROM games WHERE creator_username = ? AND status != 'CONCLUDED'", nativeQuery = true)
     List<Game> getOngoingGamesByCreatorUsername(String username);

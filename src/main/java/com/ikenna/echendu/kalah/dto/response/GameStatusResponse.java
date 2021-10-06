@@ -2,7 +2,10 @@ package com.ikenna.echendu.kalah.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ikenna.echendu.kalah.model.GameRecord;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -30,7 +33,7 @@ public class GameStatusResponse {
     public static GameStatusResponse of (GameRecord gameRecord) {
         GameStatusResponse response = new GameStatusResponse();
         response.setGameCode(gameRecord.getGameCode());
-        response.setUrl("http://localhost:8080/kalah/" + gameRecord.getGameCode());
+        response.setUrl("http://localhost:8080/api/v1/kalah/" + gameRecord.getGameCode());
         response.setNextTurn(gameRecord.getNextTurn());
         response.setStatus(gameRecord.getStatus().toString());
         response.setCreatorUsername(gameRecord.getCreatorUsername());
